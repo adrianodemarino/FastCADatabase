@@ -4,7 +4,7 @@ import pandas as pd
 import glob
 
 def create_CADDjson(path_to_folder_tsv,chunksize = 100000,progress_bar = False):
-	filename = glob.glob(path_to_folder_tsv+"*.tsv")
+	filename = glob.glob(path_to_folder_tsv+"*.tsv".replace("//","/"))
 	to_import = list(range(len(filename)))
 	if progress_bar == True:
 		from tqdm import tqdm 
@@ -31,7 +31,7 @@ def create_file_index(path_to_folder_jsons,output_name):
 	#path_to_folder_jsons = #string-like
 	print(">>> Creating index file...")
 	#create dataframe info / indice
-	json_Serie = pd.Series(glob.glob(path_to_folder_jsons+"*.json"),name="file_name").to_frame()
+	json_Serie = pd.Series(glob.glob(path_to_folder_jsons+"/*.json".replace("//","/")),name="file_name").to_frame()
 	ranges = json_Serie.file_name.str.split("_",expand=True)[[2,3]]
 	ranges[3] = ranges[3].str.replace(".json","")
 	json_Serie.loc[:,"chr"] = json_Serie.file_name.str.split("_",expand=True)[1]
@@ -39,33 +39,38 @@ def create_file_index(path_to_folder_jsons,output_name):
 	json_Serie.loc[:,"ups"] = (ranges[3]).astype(int)
 	lows = json_Serie["lows"].values  # the lower bounds
 	ups = json_Serie["ups"].values # the upper bounds
-	json_Serie.to_csv("{output_name}.tsv".format(output_name=output_name),sep="\t",index=False)
+	json_Serie.to_csv("path_to_folder_jsons/{output_name}.tsv".format(output_name=output_name),sep="\t",index=False)
 	print("QUIT")
 	return 0
 
 
-
-with open('cadd_chr9_10001_43334.json') as f: 
-	df = json.load(f) 
-
-
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-i", help="path to input file CADD",type=str,required=True)
-    parser.add_argument("-skip", help="skip the first part and create only index file",required=False)
-    parser.add_argument("-progress", help="print progress bar",required=False)
-    parser.add_argument("-o", help="output name, default [ index_file_cadd ]",type=str, default="index_file_cadd", required= False)
-    args = parser.parse_args()
+	parser = argparse.ArgumentParser()
+	parser.add_argument("-i", help="path to input file CADD",type=str,required=True)
+	parser.add_argument("-skip", help="skip the first part of creation json and create only index file",required=False)
+	parser.add_argument("-progress", help="print progress bar",required=False)
+	parser.add_argument("-chuck", help="chunksize of the json files",required=False)
+	parser.add_argument("-o", help="output_name, default [ index_file_cadd ]",type=str, default="index_file_cadd", required= False)
+	args = parser.parse_args()
 
-    index_file = args.i     
-    skip_option = args.skip
-    output_name = args.o
-    progress_bar = args.progress
+	index_file = args.i     
+	skip_option = args.skip
+	output_name = args.o
+	progress_bar = args.progress
 
-    print("")
-    print("Input FILEs : ",index_file)
-    print("CADD FILEs : ",output_name)
-    print("skip_option : ",skip_option)
-    print("progress bar : chr",progress_bar)
+	print("")
+	print("Input FILEs : ",	index_file)
+	print("output Name : ",	output_name)
+	print("skip_option : ",	skip_option)
+	print("progress bar : ",progress_bar)
+	print("chunksize : ",	chunksize)
 
-    
+	if skip_option == False:
+		create_CADDjson(index_file,chunksize = 100000,progress_bar = False)
+		create_file_index(index_file,output_name)
+	if skip_option == True:
+		create_file_index(index_file,output_name)
+
+
+if __name__ == "__main__":
+	main()
