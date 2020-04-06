@@ -2,7 +2,9 @@
 Speed up search in Big File with python
 
 Sono partito da un file molto grande ~250GB
-dunque avrebbe richiesto tantissimo tempo per il load utilizzano pandas. 
+dunque avrebbe richiesto tantissimo tempo per il load utilizzano pandas.
+
+Come ottenere dati velocemente in un file tab delimited con python 
 
 1 ) ho diviso il file per cromosomi utilizzando bash
 ```
